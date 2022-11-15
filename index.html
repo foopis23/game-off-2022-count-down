@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Game Off Timer</title>
+
+	<style>
+		/* Set Font For All */
+		* {
+			font-family: 'Arial Narrow', Courier, monospace;
+			font-weight: 700;
+			font-size: 2.3rem;
+			text-align: center;
+			color: white;
+		}
+
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			background-color: black;
+			overflow: hidden;
+		}
+
+		#app {
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.day-container {
+			font-size: 4rem;
+			line-height: 0.8;
+		}
+
+		.time-of-day-container {
+			line-height: 0.5;
+		}
+
+		.hours-remaining {
+			line-height: 2;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app" v-scope>
+		<span id="text">
+			<span class="time-of-day-container">{{getTimeOfDay()}} of<br></span>
+			<span class="day-container">The {{ getDay() }}</span><br>
+			<span class="hours-remaining">-{{ getHoursRemaining() }} Hours Remaining-</span>
+		</span>
+	</div>
+
+	<script type="module">
+		import { createApp } from 'https://unpkg.com/petite-vue?module'
+
+
+		createApp({
+			// data
+			startDate: new Date(1667334600000),
+			endDate: new Date(1669930200000),
+			// methods
+			getOrdinal(n) {
+				let ord = 'th';
+
+				if (n % 10 == 1 && n % 100 != 11) {
+					ord = 'st';
+				}
+				else if (n % 10 == 2 && n % 100 != 12) {
+					ord = 'nd';
+				}
+				else if (n % 10 == 3 && n % 100 != 13) {
+					ord = 'rd';
+				}
+
+				return ord;
+			},
+			getDay() {
+				const today = new Date();
+				const diff = today - this.startDate;
+
+				const days = Math.ceil(diff / 1000 / 60 / 60 / 24);
+
+				if (days === 1) {
+					return 'Final Day';
+				}
+
+				return `${days}${this.getOrdinal(days)} Day`;
+			},
+			getHoursRemaining() {
+				const today = new Date();
+				const diff = this.endDate - today;
+
+				const hours = Math.floor(diff / 1000 / 60 / 60);
+
+				return hours;
+			},
+			getTimeOfDay() {
+				const today = new Date();
+				const hours = today.getHours();
+
+				if (hours >= 5 && hours < 17) {
+					return 'Dawn';
+				}
+				else {
+					return 'Night';
+				}
+			}
+		}).mount();
+	</script>
+</body>
+
+</html>
