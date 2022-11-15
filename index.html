@@ -19,7 +19,8 @@
 			color: white;
 		}
 
-		html, body {
+		html,
+		body {
 			height: 100%;
 			margin: 0;
 			padding: 0;
@@ -52,72 +53,122 @@
 <body>
 	<div id="app" v-scope @vue:mounted="mounted">
 		<span id="text">
-			<span class="time-of-day-container">{{getTimeOfDay()}} of<br></span>
-			<span class="day-container">The {{ getDay() }}</span><br>
-			<span class="hours-remaining">-{{ getHoursRemaining() }} Hours Remaining-</span>
+			<span class="time-of-day-container">{{timeOfDay}} of<br></span>
+			<span class="day-container">The {{ day}} Day</span><br>
+			<span class="hours-remaining">-{{ hoursRemaining }} Hours Remaining-</span>
 		</span>
 	</div>
 
 	<script type="module">
 		import { createApp } from 'https://unpkg.com/petite-vue?module'
 
+		function getOrdinal(n) {
+			let ord = 'th';
+
+			if (n % 10 == 1 && n % 100 != 11) {
+				ord = 'st';
+			}
+			else if (n % 10 == 2 && n % 100 != 12) {
+				ord = 'nd';
+			}
+			else if (n % 10 == 3 && n % 100 != 13) {
+				ord = 'rd';
+			}
+
+			return ord;
+		}
+
+		function getDay(startDate, endDate) {
+			const today = new Date();
+
+			const timeTillEnd = endDate - today;
+			const daysTillEnd = Math.ceil(timeTillEnd / 1000 / 60 / 60 / 24);
+
+			console.log(daysTillEnd)
+
+			if (daysTillEnd <= 1) {
+				return 'Final';
+			}
+
+			const timeSinceStart = today - startDate;
+
+			const daysSinceStart = Math.ceil(timeSinceStart / 1000 / 60 / 60 / 24);
+
+			return `${daysSinceStart}${getOrdinal(daysSinceStart)}`;
+		}
+
+		function getHoursRemaining(endDate) {
+			const today = new Date();
+			const diff = endDate - today;
+
+			const hours = Math.floor(diff / 1000 / 60 / 60);
+
+			return hours;
+		}
+
+		function getTimeOfDay() {
+			const today = new Date();
+			const hours = today.getHours();
+
+			if (hours >= 0 && hours < 6) {
+				return 'Dawn';
+			}
+			else if (hours >= 6 && hours < 12) {
+				return 'Morning';
+			}
+			else if (hours >= 12 && hours < 18) {
+				return 'Afternoon';
+			}
+			else if (hours >= 18 && hours < 24) {
+				return 'Night';
+			}
+		}
+
+		function isNumeric(value) {
+			return /^\d+$/.test(value);
+		}
 
 		createApp({
 			// data
-			today: new Date(),
-			startDate: new Date(1667334600000),
-			endDate: new Date(1669930200000),
+			timeOfDay: 'Dawn',
+			day: '1st',
+			hoursRemaining: 72,
+
 			// methods
-			getOrdinal(n) {
-				let ord = 'th';
+			update() {
+				let startDate = new Date(1667334600000);
+				let endDate = new Date(1669930200000);
 
-				if (n % 10 == 1 && n % 100 != 11) {
-					ord = 'st';
-				}
-				else if (n % 10 == 2 && n % 100 != 12) {
-					ord = 'nd';
-				}
-				else if (n % 10 == 3 && n % 100 != 13) {
-					ord = 'rd';
+				// get start and end date from url params
+				if (window.location.search) {
+					const urlParams = new URLSearchParams(window.location.search);
+					let start = urlParams.get('start');
+					let end = urlParams.get('end');
+
+					if (isNumeric(start)) {
+						start = parseInt(start);
+					}
+
+					if (isNumeric(end)) {
+						end = parseInt(end);
+					}
+
+					if (start && end) {
+						startDate = new Date(start);
+						endDate = new Date(end);
+					}
 				}
 
-				return ord;
-			},
-			getDay() {
 				const today = new Date();
-				const diff = today - this.startDate;
-
-				const days = Math.ceil(diff / 1000 / 60 / 60 / 24);
-
-				if (days === 1) {
-					return 'Final Day';
-				}
-
-				return `${days}${this.getOrdinal(days)} Day`;
+				this.timeOfDay = getTimeOfDay();
+				this.day = getDay(startDate, endDate);
+				this.hoursRemaining = getHoursRemaining(endDate);
 			},
-			getHoursRemaining() {
-				const today = new Date();
-				const diff = this.endDate - today;
 
-				const hours = Math.floor(diff / 1000 / 60 / 60);
-
-				return hours;
-			},
-			getTimeOfDay() {
-				const today = new Date();
-				const hours = today.getHours();
-
-				if (hours >= 5 && hours < 17) {
-					return 'Dawn';
-				}
-				else {
-					return 'Night';
-				}
-			},
+			// lifecycle hooks
 			mounted() {
-				setInterval(() => {
-					this.today = new Date();
-				}, 5000);
+				this.update();
+				setInterval(this.update.bind(this), 5000);
 			}
 		}).mount();
 	</script>
