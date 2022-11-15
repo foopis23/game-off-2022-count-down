@@ -48,7 +48,7 @@
 </head>
 
 <body>
-	<div id="app" v-scope>
+	<div id="app" v-scope @vue:mounted="mounted">
 		<span id="text">
 			<span class="time-of-day-container">{{getTimeOfDay()}} of<br></span>
 			<span class="day-container">The {{ getDay() }}</span><br>
@@ -62,6 +62,7 @@
 
 		createApp({
 			// data
+			today: new Date(),
 			startDate: new Date(1667334600000),
 			endDate: new Date(1669930200000),
 			// methods
@@ -110,6 +111,11 @@
 				else {
 					return 'Night';
 				}
+			},
+			mounted() {
+				setInterval(() => {
+					this.today = new Date();
+				}, 5000);
 			}
 		}).mount();
 	</script>
