@@ -52,10 +52,13 @@
 
 <body>
 	<div id="app" v-scope @vue:mounted="mounted">
-		<span id="text">
+		<span v-if="hoursRemaining > -1" id="text">
 			<span class="time-of-day-container">{{timeOfDay}} of<br></span>
 			<span class="day-container">The {{ day}} Day</span><br>
 			<span class="hours-remaining">-{{ hoursRemaining }} Hours Remaining-</span>
+		</span>
+		<span v-else>
+			<span class="time-of-day-container">You've met with a terrible fate,<br>haven't you?</span>
 		</span>
 	</div>
 
@@ -80,17 +83,39 @@
 
 		function getDay(startDate, endDate) {
 			const today = new Date();
+			
+			const startOfToday = new Date(today);
+			startOfToday.setHours(0, 0, 0, 0);
 
-			const timeTillEnd = endDate - today;
-			const daysTillEnd = Math.ceil(timeTillEnd / 1000 / 60 / 60 / 24);
+			const startOfEndDate = new Date(endDate);
+			startOfEndDate.setHours(0, 0, 0, 0);
 
-			console.log(daysTillEnd)
+			const startOfStartDate = new Date(startDate);
+			startOfStartDate.setHours(0, 0, 0, 0);
 
-			if (daysTillEnd <= 1) {
+			const timeTillEnd = startOfEndDate - startOfToday;
+			const daysTillEnd = Math.floor(timeTillEnd / 1000 / 60 / 60 / 24);
+
+			if (daysTillEnd === 0) {
 				return 'Final';
 			}
 
-			const timeSinceStart = today - startDate;
+			// even if the event starts in the middle of the day, it feels more natural to count the difference of days from the start of the day
+
+			
+			const timeSinceStart = today - startOfStartDate;
+
+			console.log({
+				today,
+				startOfToday,
+				endDate,
+				startOfEndDate,
+				timeTillEnd,
+				daysTillEnd,
+				startDate,
+				startOfStartDate,
+				timeSinceStart
+			});
 
 			const daysSinceStart = Math.ceil(timeSinceStart / 1000 / 60 / 60 / 24);
 
